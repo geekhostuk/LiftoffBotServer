@@ -353,7 +353,68 @@ The file is named after the bot's Steam ID: e.g. `76561198726097002.json`. It ap
 docker exec -it liftoff-bot-1 steam-workshop --list
 ```
 
-### Restoring subscriptions
+### Copying a backup file from your workstation
+
+The `workshop-backups/liftoff-bot-N/` directories on the server are bind-mounted directly into the containers, so any file you copy there is immediately available inside without a container restart.
+
+**From Windows (PowerShell or Command Prompt):**
+
+```powershell
+# Copy to bot-1's backup directory
+scp C:\path\to\backup.json user@your-server:~/LiftoffBotServer/workshop-backups/liftoff-bot-1/
+
+# To apply the same file to all three bots
+scp C:\path\to\backup.json user@your-server:~/LiftoffBotServer/workshop-backups/liftoff-bot-1/
+scp C:\path\to\backup.json user@your-server:~/LiftoffBotServer/workshop-backups/liftoff-bot-2/
+scp C:\path\to\backup.json user@your-server:~/LiftoffBotServer/workshop-backups/liftoff-bot-3/
+```
+
+**From Linux / macOS:**
+
+```bash
+scp /path/to/backup.json user@your-server:~/LiftoffBotServer/workshop-backups/liftoff-bot-1/
+```
+
+Once copied, restore as normal — the file is visible inside the container at `/home/steam/workshop-backups/`.
+
+### Restoring from a JMT FPV playlist export
+
+The [JMT FPV](https://jmtfpv.com) playlist manager lets you export all competition tracks as a JSON backup. This is the recommended way to ensure every bot has the correct Liftoff Workshop tracks subscribed before a competition.
+
+**Step 1 — Export from JMT FPV**
+
+In the JMT FPV admin panel, export the track playlist to a `.json` file on your local machine (e.g. `jmtfpv-tracks.json`).
+
+**Step 2 — Copy to the server**
+
+```powershell
+# Windows PowerShell — copy to all three bots at once
+foreach ($bot in 1,2,3) {
+    scp C:\Downloads\jmtfpv-tracks.json `
+        user@your-server:~/LiftoffBotServer/workshop-backups/liftoff-bot-$bot/
+}
+```
+
+**Step 3 — Restore on each bot**
+
+Each bot subscribes independently (separate Steam accounts), so run the restore on each:
+
+```bash
+# Preview first — no changes made
+docker exec -it liftoff-bot-1 steam-workshop --dry-run \
+  --restore /home/steam/workshop-backups/jmtfpv-tracks.json
+
+# Apply to all three bots
+for bot in liftoff-bot-1 liftoff-bot-2 liftoff-bot-3; do
+  echo "=== Restoring $bot ==="
+  docker exec -it $bot steam-workshop \
+    --restore /home/steam/workshop-backups/jmtfpv-tracks.json
+done
+```
+
+Steam must be running inside each container when you run this (wait ~60 s after `docker compose up`).
+
+### Restoring subscriptions (from a steam-workshop backup)
 
 ```bash
 docker exec -it liftoff-bot-1 steam-workshop \
