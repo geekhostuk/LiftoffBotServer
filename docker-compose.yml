@@ -1,0 +1,139 @@
+name: lo-bot-host
+
+x-liftoff-bot: &liftoff-bot
+  image: lo-bot-host:local
+  build:
+    context: .
+    dockerfile: Dockerfile
+  restart: unless-stopped
+  shm_size: "1gb"
+  stop_grace_period: 45s
+  # Steam's bootstrap sandbox needs unprivileged user namespaces; Ubuntu 24.04's
+  # default AppArmor profile forbids them for containers. seccomp too — Steam's
+  # bootstrap uses clone3 which the default seccomp profile rejects on some kernels.
+  security_opt:
+    - apparmor:unconfined
+    - seccomp:unconfined
+  env_file:
+    - path: .env
+      required: false
+  deploy:
+    resources:
+      reservations:
+        devices:
+          - driver: nvidia
+            count: all
+            capabilities: [gpu, compute, graphics, video, utility, display]
+  networks:
+    - liftoff-bot-net
+    # Uncomment to attach to the competition server's Docker network. You must
+    # also uncomment the `liftoff-server-internal` entry at the bottom of this
+    # file. Skip if your COMPETITION_SERVER_URL uses host.docker.internal.
+    # - liftoff-server-internal
+  tmpfs:
+    - /tmp:size=512m,mode=1777
+
+services:
+  liftoff-bot-1:
+    <<: *liftoff-bot
+    container_name: liftoff-bot-1
+    hostname: liftoff-bot-1
+    environment:
+      INSTANCE_ID: liftoff-bot-1
+      DISPLAY_NUM: "1"
+      DISPLAY_RESOLUTION: "${DISPLAY_RESOLUTION:-1280x720}"
+      COMPETITION_SERVER_URL: "${COMPETITION_SERVER_URL}"
+      PLUGIN_API_KEY: "${PLUGIN_API_KEY_1}"
+      STEAM_USER_LABEL: "${STEAM_USER_1:-bot-1}"
+      ALLOW_UNAUTH_VNC: "${ALLOW_UNAUTH_VNC:-0}"
+      VNC_PASSWORD_FILE: /run/secrets/vnc-passwd
+    ports:
+      - "${VNC_BIND_ADDR:-127.0.0.1}:5901:5900"
+    volumes:
+      - liftoff-bot-1-steam:/home/steam/.steam
+      - liftoff-bot-1-steamlocal:/home/steam/.local/share/Steam
+      - liftoff-bot-1-bepinex-config:/var/liftoff/bepinex-config
+      - liftoff-bot-1-bepinex-cache:/var/liftoff/bepinex-cache
+      - liftoff-bot-1-userconfig:/home/steam/.config
+      - ./plugins-extra:/opt/plugins-extra:ro
+      - ./logs/liftoff-bot-1:/home/steam/logs
+      - ./workshop-backups/liftoff-bot-1:/home/steam/workshop-backups
+      - ./secrets/vnc-passwd:/run/secrets/vnc-passwd:ro
+
+  liftoff-bot-2:
+    <<: *liftoff-bot
+    container_name: liftoff-bot-2
+    hostname: liftoff-bot-2
+    environment:
+      INSTANCE_ID: liftoff-bot-2
+      DISPLAY_NUM: "2"
+      DISPLAY_RESOLUTION: "${DISPLAY_RESOLUTION:-1280x720}"
+      COMPETITION_SERVER_URL: "${COMPETITION_SERVER_URL}"
+      PLUGIN_API_KEY: "${PLUGIN_API_KEY_2}"
+      STEAM_USER_LABEL: "${STEAM_USER_2:-bot-2}"
+      ALLOW_UNAUTH_VNC: "${ALLOW_UNAUTH_VNC:-0}"
+      VNC_PASSWORD_FILE: /run/secrets/vnc-passwd
+    ports:
+      - "${VNC_BIND_ADDR:-127.0.0.1}:5902:5900"
+    volumes:
+      - liftoff-bot-2-steam:/home/steam/.steam
+      - liftoff-bot-2-steamlocal:/home/steam/.local/share/Steam
+      - liftoff-bot-2-bepinex-config:/var/liftoff/bepinex-config
+      - liftoff-bot-2-bepinex-cache:/var/liftoff/bepinex-cache
+      - liftoff-bot-2-userconfig:/home/steam/.config
+      - ./plugins-extra:/opt/plugins-extra:ro
+      - ./logs/liftoff-bot-2:/home/steam/logs
+      - ./workshop-backups/liftoff-bot-2:/home/steam/workshop-backups
+      - ./secrets/vnc-passwd:/run/secrets/vnc-passwd:ro
+
+  liftoff-bot-3:
+    <<: *liftoff-bot
+    container_name: liftoff-bot-3
+    hostname: liftoff-bot-3
+    environment:
+      INSTANCE_ID: liftoff-bot-3
+      DISPLAY_NUM: "3"
+      DISPLAY_RESOLUTION: "${DISPLAY_RESOLUTION:-1280x720}"
+      COMPETITION_SERVER_URL: "${COMPETITION_SERVER_URL}"
+      PLUGIN_API_KEY: "${PLUGIN_API_KEY_3}"
+      STEAM_USER_LABEL: "${STEAM_USER_3:-bot-3}"
+      ALLOW_UNAUTH_VNC: "${ALLOW_UNAUTH_VNC:-0}"
+      VNC_PASSWORD_FILE: /run/secrets/vnc-passwd
+    ports:
+      - "${VNC_BIND_ADDR:-127.0.0.1}:5903:5900"
+    volumes:
+      - liftoff-bot-3-steam:/home/steam/.steam
+      - liftoff-bot-3-steamlocal:/home/steam/.local/share/Steam
+      - liftoff-bot-3-bepinex-config:/var/liftoff/bepinex-config
+      - liftoff-bot-3-bepinex-cache:/var/liftoff/bepinex-cache
+      - liftoff-bot-3-userconfig:/home/steam/.config
+      - ./plugins-extra:/opt/plugins-extra:ro
+      - ./logs/liftoff-bot-3:/home/steam/logs
+      - ./workshop-backups/liftoff-bot-3:/home/steam/workshop-backups
+      - ./secrets/vnc-passwd:/run/secrets/vnc-passwd:ro
+
+networks:
+  liftoff-bot-net:
+    driver: bridge
+  # Uncomment both this block and the service-level reference above to attach
+  # bots to the existing competition server's Docker network (then bots can
+  # resolve the server by service name, e.g. ws://realtime:3000/plugin).
+  # liftoff-server-internal:
+  #   external: true
+
+volumes:
+  liftoff-bot-1-steam:
+  liftoff-bot-1-steamlocal:
+  liftoff-bot-1-bepinex-config:
+  liftoff-bot-1-bepinex-cache:
+  liftoff-bot-1-userconfig:
+  liftoff-bot-2-steam:
+  liftoff-bot-2-steamlocal:
+  liftoff-bot-2-bepinex-config:
+  liftoff-bot-2-bepinex-cache:
+  liftoff-bot-2-userconfig:
+  liftoff-bot-3-steam:
+  liftoff-bot-3-steamlocal:
+  liftoff-bot-3-bepinex-config:
+  liftoff-bot-3-bepinex-cache:
+  liftoff-bot-3-userconfig:

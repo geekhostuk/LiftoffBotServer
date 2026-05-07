@@ -1,0 +1,149 @@
+## BepInEx plugin config for LiftoffPhotonEventLogger.
+## Rendered by entrypoint.sh via envsubst; ServerUrl and ApiKey are re-synced
+## from .env on every start, other edits are preserved.
+## Reference: config keys are bound via Config.Bind(...) in the plugin source
+## at C:\Projects\Liftoff\Pluggins\LiftoffPhotonEventLogger\.
+
+[Competition]
+
+## Enable the competition client (WebSocket to the server).
+# Setting type: Boolean
+# Default value: false
+Enabled = true
+
+## WebSocket URL of the competition server (no trailing slash).
+# Setting type: String
+# Default value:
+ServerUrl = ${COMPETITION_SERVER_URL}
+
+## Bearer token for this bot. Pre-register in the server's `bots` table;
+## each token maps to a distinct botId.
+# Setting type: String
+# Default value:
+ApiKey = ${PLUGIN_API_KEY}
+
+## Seconds between reconnect attempts if the WS drops.
+# Setting type: Int32
+# Default value: 5
+ReconnectDelaySecs = 5
+
+## Seconds between keepalive frames.
+# Setting type: Int32
+# Default value: 15
+KeepAliveIntervalSecs = 15
+
+[Network]
+
+## Photon disconnect timeout, ms. Longer values help flaky hosts.
+# Setting type: Int32
+# Default value: 30000
+DisconnectTimeoutMs = 30000
+
+## Photon sent-count allowance before disconnect.
+# Setting type: Int32
+# Default value: 7
+SentCountAllowance = 7
+
+## Interval between time-ping events to server, ms.
+# Setting type: Int32
+# Default value: 1000
+TimePingIntervalMs = 1000
+
+[Logging]
+
+## Write all Photon events to disk (verbose).
+# Setting type: Boolean
+# Default value: false
+EnableEventsLog = false
+
+## Write per-opcode log files.
+# Setting type: Boolean
+# Default value: false
+EnablePerCodeLogs = false
+
+## Write the structured state log (recommended).
+# Setting type: Boolean
+# Default value: true
+EnableStateLog = true
+
+## Write JSONL race recordings for replay/analysis.
+# Setting type: Boolean
+# Default value: true
+EnableRaceJsonl = true
+
+## Dump full event payload for opcode 200 (debug only; very noisy).
+# Setting type: Boolean
+# Default value: false
+Event200DeepDump = false
+
+## Days to keep rotated logs. Older files are pruned on startup.
+# Setting type: Int32
+# Default value: 7
+LogRetentionDays = 7
+
+## Comma-separated list of opcodes to silence entirely.
+# Setting type: String
+# Default value: 201,226
+SilentCodes = 201,226
+
+[Recording]
+
+## Minimum lap duration (ms) to record. 0 = record everything.
+# Setting type: Int32
+# Default value: 0
+MinLapMs = 0
+
+## Seconds after a track change during which lap events are suppressed.
+# Setting type: Int32
+# Default value: 10
+TrackChangeGraceSeconds = 10
+
+[Checkpoint Hook]
+
+## Enable checkpoint/sector-split reflection hook. Required for timing events.
+# Setting type: Boolean
+# Default value: true
+EnableCheckpointHook = true
+
+[Lobby]
+
+## Emit lobby-status events on player/room changes.
+# Setting type: Boolean
+# Default value: true
+EmitLobbyStatusOnChange = true
+
+[Diagnostics]
+
+## Render the on-screen bot stats overlay. Default off for headless bots —
+## flip on via VNC when debugging.
+# Setting type: Boolean
+# Default value: false
+ShowBotStatsOverlay = false
+
+[MultiplayerTrackControl]
+
+## The plugin's own defaults enable verbose reflection-based discovery on
+## startup, which has historically segfaulted Mono on this Unity build (crash
+## in MultiplayerDiscoveryService.ScoreType). Known-good production config
+## keeps the feature enabled but turns the diagnostics off.
+# Setting type: Boolean
+# Default value: true
+EnableMultiplayerTrackControl = true
+
+## Setting type: Boolean
+# Default value: true
+EnableDiscoveryLogging = false
+
+## Setting type: Boolean
+# Default value: true
+AutoDumpOnLobbyJoin = false
+
+## Setting type: Boolean
+# Default value: true
+EnableHarmonyDiagnostics = false
+
+## Safety-locked to false by entrypoint.sh render_plugin_config on every start.
+## Flip in the plugin source at C:\Projects\Liftoff if you genuinely need dry-run.
+# Setting type: Boolean
+# Default value: true
+EnableDryRun = false

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Thin wrapper so SteamAppId and LD_LIBRARY_PATH are scoped only to
+# steam-subber — never exported into the container environment at large.
+exec env SteamAppId=410340 LD_LIBRARY_PATH=/opt/swm${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} \
+     /opt/swm/steam-subber "$@"
