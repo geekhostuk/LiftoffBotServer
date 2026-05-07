@@ -375,7 +375,13 @@ scp C:\path\to\backup.json user@your-server:~/LiftoffBotServer/workshop-backups/
 scp /path/to/backup.json user@your-server:~/LiftoffBotServer/workshop-backups/liftoff-bot-1/
 ```
 
-Once copied, restore as normal — the file is visible inside the container at `/home/steam/workshop-backups/`.
+Once copied, restore as normal. Note the path mapping — the `liftoff-bot-N/` subdirectory on the host is the mount root inside the container:
+
+```
+host:  ./workshop-backups/liftoff-bot-1/myfile.json
+                    ↓ bind mount
+container:  /home/steam/workshop-backups/myfile.json   ← use this path with steam-workshop
+```
 
 ### Restoring from a JMT FPV playlist export
 
@@ -401,6 +407,8 @@ Each bot subscribes independently (separate Steam accounts), so run the restore 
 
 ```bash
 # Preview first — no changes made
+# Note: the path inside the container is /home/steam/workshop-backups/<filename>
+# The liftoff-bot-N subdirectory on the host is the mount root; don't include it in the path.
 docker exec -it liftoff-bot-1 steam-workshop --dry-run \
   --restore /home/steam/workshop-backups/jmtfpv-tracks.json
 
